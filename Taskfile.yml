@@ -6,7 +6,7 @@ vars:
   GREETING: Hello, World!
   EXE: vault-aws-credential-protocol
   VERSION:
-    sh: git describe --tags --always --dirty | cut -c2-
+    sh: git describe --tags --always --match 'v*' --dirty | cut -c2-
 
 tasks:
   default:
