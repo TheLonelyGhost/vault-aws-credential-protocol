@@ -1,0 +1,57 @@
+# https://taskfile.dev
+
+version: '3'
+
+vars:
+  GREETING: Hello, World!
+  EXE: vault-aws-credential-protocol
+
+tasks:
+  default:
+    cmds:
+      - task: build
+    silent: true
+
+  install:
+    run: once
+    deps:
+      - build
+    cmds:
+      - mkdir -p ~/.local/bin
+      - install -m0755 out/{{OS}}-{{ARCH}}/{{.EXE}}{{exeExt}} ~/.local/bin/
+    status:
+      - test -e ~/.local/bin/{{.EXE}}{{exeExt}}
+
+  build:
+    run: once
+    sources:
+      - '**/*.go'
+      - exclude: '**/*_test.go'
+      - go.mod
+      - go.sum
+    generates:
+      - 'out/{{OS}}-{{ARCH}}/{{.EXE}}{{exeExt}}'
+    cmds:
+      - cmd: env GOARCH='{{ARCH}}' GOOS='{{OS}}' go build -o 'out/{{OS}}-{{ARCH}}/{{.EXE}}{{exeExt}}' -ldflags '-s -w' -trimpath ./
+
+  build:all:
+    run: once
+    sources:
+      - '**/*.go'
+      - exclude: '**/*_test.go'
+      - go.mod
+      - go.sum
+    generates:
+      - 'out/*/{{.EXE}}'
+      - 'out/*/{{.EXE}}.exe'
+    cmds:
+      - for:
+          matrix:
+            OS: ['windows', 'darwin', 'linux']
+            ARCH: ['amd64', 'arm64']
+        cmd: env GOARCH='{{.ITEM.ARCH}}' GOOS='{{.ITEM.OS}}' go build -o 'out/{{.ITEM.OS}}-{{.ITEM.ARCH}}/{{.EXE}}{{if eq .ITEM.OS "windows"}}.exe{{end}}' -ldflags '-s -w' -trimpath ./
+
+  test:
+    run: once
+    cmds:
+      - go test -v ./...
