@@ -5,6 +5,8 @@ version: '3'
 vars:
   GREETING: Hello, World!
   EXE: vault-aws-credential-protocol
+  VERSION:
+    sh: git describe --tags --always --dirty | cut -c2-
 
 tasks:
   default:
@@ -32,7 +34,7 @@ tasks:
     generates:
       - 'out/{{OS}}-{{ARCH}}/{{.EXE}}{{exeExt}}'
     cmds:
-      - cmd: env GOARCH='{{ARCH}}' GOOS='{{OS}}' go build -o 'out/{{OS}}-{{ARCH}}/{{.EXE}}{{exeExt}}' -ldflags '-s -w' -trimpath ./
+      - cmd: env GOARCH='{{ARCH}}' GOOS='{{OS}}' go build -o 'out/{{OS}}-{{ARCH}}/{{.EXE}}{{exeExt}}' -ldflags '-s -w -X github.com/thelonelyghost/vault-aws-credential-protocol/cmd.Version={{.VERSION}}' -trimpath ./
 
   build:all:
     run: once
@@ -49,7 +51,7 @@ tasks:
           matrix:
             OS: ['windows', 'darwin', 'linux']
             ARCH: ['amd64', 'arm64']
-        cmd: env GOARCH='{{.ITEM.ARCH}}' GOOS='{{.ITEM.OS}}' go build -o 'out/{{.ITEM.OS}}-{{.ITEM.ARCH}}/{{.EXE}}{{if eq .ITEM.OS "windows"}}.exe{{end}}' -ldflags '-s -w' -trimpath ./
+        cmd: env GOARCH='{{.ITEM.ARCH}}' GOOS='{{.ITEM.OS}}' go build -o 'out/{{.ITEM.OS}}-{{.ITEM.ARCH}}/{{.EXE}}{{if eq .ITEM.OS "windows"}}.exe{{end}}' -ldflags '-s -w -X github.com/thelonelyghost/vault-aws-credential-protocol/cmd.Version={{.VERSION}}' -trimpath ./
 
   test:
     run: once
